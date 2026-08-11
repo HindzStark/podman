@@ -1606,6 +1606,7 @@ func AutocompleteEventFilter(cmd *cobra.Command, _ []string, toComplete string) 
 		"container=": func(s string) ([]string, cobra.ShellCompDirective) { return getContainers(cmd, s, completeDefault) },
 		"image=":     func(s string) ([]string, cobra.ShellCompDirective) { return getImages(cmd, s) },
 		"artifact=":  func(s string) ([]string, cobra.ShellCompDirective) { return getArtifacts(cmd, s) },
+		"network=":   func(s string) ([]string, cobra.ShellCompDirective) { return getNetworks(cmd, s, completeDefault) },
 		"pod=":       func(s string) ([]string, cobra.ShellCompDirective) { return getPods(cmd, s, completeDefault) },
 		"volume=":    func(s string) ([]string, cobra.ShellCompDirective) { return getVolumes(cmd, s) },
 		"event=":     event,
