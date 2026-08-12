@@ -1599,13 +1599,14 @@ func AutocompleteEventFilter(cmd *cobra.Command, _ []string, toComplete string) 
 		return []string{
 			events.Container.String(), events.Image.String(), events.Network.String(),
 			events.Pod.String(), events.System.String(), events.Volume.String(), events.Secret.String(),
-			events.Artifact.String(),
+			events.Artifact.String(), events.Machine.String(),
 		}, cobra.ShellCompDirectiveNoFileComp
 	}
 	kv := keyValueCompletion{
 		"container=": func(s string) ([]string, cobra.ShellCompDirective) { return getContainers(cmd, s, completeDefault) },
 		"image=":     func(s string) ([]string, cobra.ShellCompDirective) { return getImages(cmd, s) },
 		"artifact=":  func(s string) ([]string, cobra.ShellCompDirective) { return getArtifacts(cmd, s) },
+		"machine=":   nil,
 		"pod=":       func(s string) ([]string, cobra.ShellCompDirective) { return getPods(cmd, s, completeDefault) },
 		"volume=":    func(s string) ([]string, cobra.ShellCompDirective) { return getVolumes(cmd, s) },
 		"event=":     event,

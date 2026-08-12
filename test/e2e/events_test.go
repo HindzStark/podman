@@ -61,6 +61,12 @@ var _ = Describe("Podman events", func() {
 		Expect(events[0]).To(ContainSubstring(vname), "event log includes volume name")
 	})
 
+	It("podman events with a machine filter", func() {
+		result := podmanTest.Podman([]string{"events", "--stream=false", "--filter", "machine=podman-machine-default"})
+		result.WaitWithDefaultTimeout()
+		Expect(result).Should(ExitCleanly())
+	})
+
 	It("podman events with an event filter and container=cid", func() {
 		_, ec, cid := podmanTest.RunLsContainer("")
 		Expect(ec).To(Equal(0))

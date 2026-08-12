@@ -113,6 +113,7 @@ filters are supported:
 | event      | event_status (described above)      |
 | image      | [Name or ID] Image name or ID       |
 | label      | [key] or [key=value] label          |
+| machine    | [Name or ID] Machine name or ID     |
 | pod        | [Name or ID] Pod name or ID         |
 | volume     | [Name or ID] Volume name or ID      |
 | type       | Event_type (described above)        |
