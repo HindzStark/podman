@@ -116,18 +116,21 @@ func (e EventLogFile) Read(ctx context.Context, options ReadOptions) error {
 	if err != nil {
 		return err
 	}
+
+	// Parse the until time upfront so we can use it inside the reader
+	// goroutine to decide when to stop.  Previously, a background
+	// goroutine called time.Sleep(time.Until(untilTime)) and then
+	// t.Stop(), which races with (and usually beats) the reader loop
+	// when untilTime is in the past because time.Sleep returns
+	// immediately for non-positive durations.
+	var untilTime time.Time
 	if len(options.Until) > 0 {
-		untilTime, err := util.ParseInputTime(options.Until, false)
+		untilTime, err = util.ParseInputTime(options.Until, false)
 		if err != nil {
 			return err
 		}
-		go func() {
-			time.Sleep(time.Until(untilTime))
-			if err := t.Stop(); err != nil {
-				logrus.Errorf("Stopping logger: %v", err)
-			}
-		}()
 	}
+
 	logrus.Debugf("Reading events from file %q", e.options.LogFilePath)
 
 	// Get the time *before* starting to read.  Comparing the timestamps
@@ -149,6 +152,11 @@ func (e EventLogFile) Read(ctx context.Context, options ReadOptions) error {
 
 	go func() {
 		defer close(options.EventChannel)
+		defer func() {
+			if err := t.Stop(); err != nil {
+				logrus.Errorf("Stopping logger: %v", err)
+			}
+		}()
 		var line *tail.Line
 		var ok bool
 		var skipRotate bool
@@ -172,6 +180,14 @@ func (e EventLogFile) Read(ctx context.Context, options ReadOptions) error {
 				options.EventChannel <- ReadResult{Error: err}
 				continue
 			}
+
+			// If we have an until boundary and the event's
+			// timestamp is past it, we have read everything in the
+			// requested window.  Stop the reader.
+			if !untilTime.IsZero() && event.Time.After(untilTime) {
+				return
+			}
+
 			switch event.Type {
 			case Image, Volume, Pod, Container, Network, Secret, Artifact:
 				//	no-op
